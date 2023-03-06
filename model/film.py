@@ -13,3 +13,6 @@ class Screening:
     
     def detailString(self):
         return self.time + " " + self.cinema + " " + self.screen + "\n" + self.link 
+
+    def getDefault():
+        return Screening("Movie","Today","Cinema","www.no.com","Screen 1", None)
