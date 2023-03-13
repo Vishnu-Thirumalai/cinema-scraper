@@ -1,10 +1,11 @@
 class Screening:
-    def __init__(self,name,time,cinema,link,screen,notes):
+    def __init__(self,name="Movie",time="00:00",cinema="cinema",link=None,screen=None,notes=None,duration=0):
         self.name = name
         self.time = time
         self.cinema = cinema
         self.link = link
         self.screen = screen
+        self.duration = duration
         self.notes = notes
 
 

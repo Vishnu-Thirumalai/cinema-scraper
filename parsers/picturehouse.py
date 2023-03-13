@@ -4,23 +4,28 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from time import sleep
 
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+
+
 from bs4 import BeautifulSoup
 from model.film import *
 
 from datetime import date
-#from datetime import timedelta
+from datetime import timedelta
 
 class Picturehouse:
 
     cinema = "Stratford Picturehouse"
     baseLink = "https://www.picturehouses.com/cinema/stratford-picturehouse"
 
-    whatsOnUrl = baseLink + "WhatsOn?sd={sd}&sm={sm}&sy={sy}&ed={ed}&em={em}&ey={ey}"
 
     def getFilms(startDate: date, endDate: date) -> List[Screening]:
         url = Picturehouse.getURL()
         soup = Picturehouse.getPage(url)
-        films = Picturehouse.getScreenings(soup)
+        if soup == None:
+            return []
+        films = Picturehouse.getScreenings(soup, startDate, endDate)
         return films
 
 
@@ -31,44 +36,70 @@ class Picturehouse:
 
 
         options = Options()
-        options.headless = True
         options.add_argument('-headless')
 
         driver = webdriver.Firefox(options=options)
         driver.get(url)
+        driver.set_window_size(2300,2000)
+        sleep(0.5)
+
+        try:
+            get_all_btn = driver.find_element(By.ID,"show_all_dates_btn")
+        except NoSuchElementException:
+            print("Can't retrieve films from Picturehouse: Get all Dates button missing")
+            return None
+
+        get_all_btn.click()
+        sleep(0.5)
+
+        source =driver.page_source
+
+        soup = BeautifulSoup(source, 'html.parser')
+
+        driver.close()
+        driver.quit()
+
+        return soup
         
-        sleep(3)
-        return "arrived"
-        #return BeautifulSoup(page.content, 'html.parser')
-        
-    def getScreenings(soup: BeautifulSoup) -> List[Screening]:        
-        days = soup.find("div", attrs={'class':'next-7-days-list'}).find_all("div", attrs={'class':'day'}, recursive=False)
+    def getScreenings(soup: BeautifulSoup, startDate: date, endDate: date) -> List[Screening]:
+        dates = soup.find('ul',attrs={'id':'show_all_date_list'})
 
         screenings = []
-        for day in days:
-            curr = day.h4.text
-            performances = day.find_all("div", attrs={'class':'performance'})
+        while startDate <= endDate:
+            dateStr = startDate.strftime("class_%Y-%m-%d")
+            startDate+= timedelta(days=1)
+            dateDiv = dates.find("div", attrs={'class':dateStr})
+            if dateDiv == None:
+                continue
+            print(dateStr)
+            movies = dateDiv.find_all("div", attrs={'class':"movie_deatils_list"})
 
-            for p in performances:
-                if p.find("span", attrs={'class':'soldout'}):
-                    continue
+            for movie in movies:
+                m = movie.find("div", attrs={'class':"cinema_ListingBox"})
 
-                main = p.find('a')
-                name = main.text.strip()
-                link = PCC.baseLink + main.attrs['href']
+                movieName = m.a.h3.contents[0].strip()                 
+                movieLink = m.a['href']
+                movieDuration = m.a.find('span', attrs={'class':"moviMint"}).contents[0].strip()  
+                ageRating = m.a.find('span', attrs={'class':"movieNumber_12A"}).contents[0].strip()  
 
-                time = curr + " - " + p.find("span", attrs={'class':'time'}).text
-            
-                screen =  p.find("span", attrs={'class':'auditorium'}).text
-
-                notes = p.find("span", attrs={'class':'notes'})
-                if notes:
-                    notes = notes.text.strip()
-
-                screenings.append(Screening(name,time,Picturehouse.cinema,link,screen,notes))
+                performances = movie.find("ul", attrs={'class':"cinemaTime_list"}).find_all('li')
+                for perf in performances:
+                    print(perf)
+                    bookingLink = perf.a['href']
+                    movieTime = perf.a.span.text.strip()
+                    notes = ""+ageRating
+                    for note in  perf.p.find_all('a'):
+                        notes += " "+note.text
+                    screenings.append(Screening(movieName,movieTime, Picturehouse.cinema, movieLink, None, notes, movieDuration))
             
         return screenings
 
-url = Picturehouse.getURL()
-soup = Picturehouse.getPage(url)
-print(soup)
+# url = Picturehouse.getURL()
+# soup = Picturehouse.getPage(url)
+
+with open("picturehouse.html") as file:
+    soup = BeautifulSoup(file, 'html.parser')
+    print("parsed")
+    screenings = Picturehouse.getScreenings(soup, date.today(), date.today() + timedelta(days=2))
+    for s in screenings:
+        print (s.name +"/"+ s.time+"/"+s.link+" - " + s.notes)
