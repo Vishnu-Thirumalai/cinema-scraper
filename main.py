@@ -53,7 +53,7 @@ def getArgParser() -> ArgumentParser:
 # Parse CLI arguments
 parser = getArgParser()
 args = parser.parse_args()
-start, end = date.getDates(args.dates)
+start, end = date.getDatesFromArguments(args.dates)
 targetFilm = args.film
 
 

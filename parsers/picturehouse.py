@@ -13,6 +13,7 @@ from model.film import *
 
 from datetime import date
 from datetime import timedelta
+from datetime import datetime
 
 class Picturehouse:
 
@@ -86,7 +87,9 @@ class Picturehouse:
                 for perf in performances:
                     print(perf)
                     bookingLink = perf.a['href']
-                    movieTime = perf.a.span.text.strip()
+                    t = datetime.strptime(perf.a.span.text.strip(), "%H:%M").time()#24Hour:Minute 
+                    movieTime = datetime.combine(startDate, t)
+
                     notes = ""+ageRating
                     for note in  perf.p.find_all('a'):
                         notes += " "+note.text
@@ -102,4 +105,4 @@ with open("picturehouse.html") as file:
     print("parsed")
     screenings = Picturehouse.getScreenings(soup, date.today(), date.today() + timedelta(days=2))
     for s in screenings:
-        print (s.name +"/"+ s.time+"/"+s.link+" - " + s.notes)
+        print (s.name +"/"+ str(s.time)+"/"+s.link+" - " + s.notes)
