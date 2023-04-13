@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from parsers.pcc import PCC
-from parsers.picturehouse import Picturehouse
+from parsers.picturehouse import PicturehouseCentral, StratfordPicturehouse
 from parsers import dummy
 from model.film import *
 from argparse import ArgumentParser
@@ -15,21 +15,33 @@ def displayFilms(films:Dict[str,List[Screening]], targetFilm:str = ""):
             continue
         print("---------------")
         print(film)
+        print(screenings[-1].link)
+
+        screenings.sort(key=lambda x:x.time)
+
         for s in screenings:
             print("----")
             print(s.detailString() + ("\n"+s.notes if s.notes else ""))
 
 
 def getFilms(startDate:str, endDate:str) -> Dict[str,List[Screening]]: 
+    #films = dummy.getFilms()
+
     films = PCC.getFilms(startDate,endDate)
     print("Retrieved PCC")
-    films += Picturehouse.getFilms(startDate,endDate)
-    print("Retrieved Picturehouse")
 
-    #films = dummy.getFilms()
+    central = PicturehouseCentral()
+    films.extend(central.getFilms(startDate,endDate))
+    print("Retrieved Picturehouse Central")
+
+    stratford = StratfordPicturehouse()
+    films.extend(stratford.getFilms(startDate,endDate))
+    print("Retrieved Picturehouse Stratford")
+    
+
     filmDict = dict()
     for f in films:
-        n = f.name
+        n = f.name.title()
         if n in filmDict:
             filmDict[n].append(f)
         else:

@@ -17,23 +17,23 @@ from datetime import datetime
 
 class Picturehouse:
 
-    cinema = "Stratford Picturehouse"
-    baseLink = "https://www.picturehouses.com/cinema/stratford-picturehouse"
+    def __init__(self) -> None:
+        self.cinema = ""
+        self.baseLink = ""
 
-
-    def getFilms(startDate: date, endDate: date) -> List[Screening]:
-        url = Picturehouse.getURL()
-        soup = Picturehouse.getPage(url)
+    def getFilms(self, startDate: date, endDate: date) -> List[Screening]:
+        url = self.getURL()
+        soup = self.getPage(url)
         if soup == None:
             return []
-        films = Picturehouse.getScreenings(soup, startDate, endDate)
+        films = self.getScreenings(soup, startDate, endDate)
         return films
 
 
-    def getURL() -> str:   
-        return Picturehouse.baseLink
+    def getURL(self) -> str:   
+        return self.baseLink
 
-    def getPage(url:str) -> BeautifulSoup:
+    def getPage(self, url:str) -> BeautifulSoup:
 
 
         options = Options()
@@ -42,12 +42,16 @@ class Picturehouse:
         driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.set_window_size(2300,2000)
-        sleep(2)
+        
 
-        try:
-            get_all_btn = driver.find_element(By.ID,"show_all_dates_btn")
-        except NoSuchElementException:
-            print("Can't retrieve films from "+Picturehouse.cinema+": Get all Dates button missing")
+        for i in range(10):
+            try:
+                get_all_btn = driver.find_element(By.ID,"show_all_dates_btn")
+                break
+            except NoSuchElementException:
+                sleep(1)
+        if not get_all_btn:
+            print("Can't retrieve films from "+self.cinema+": Get all Dates button missing")
             return None
 
         get_all_btn.click()
@@ -63,7 +67,7 @@ class Picturehouse:
 
         return soup
         
-    def getScreenings(soup: BeautifulSoup, startDate: date, endDate: date) -> List[Screening]:
+    def getScreenings(self, soup: BeautifulSoup, startDate: date, endDate: date) -> List[Screening]:
         dates = soup.find('ul',attrs={'id':'show_all_date_list'})
 
         screenings = []
@@ -98,9 +102,24 @@ class Picturehouse:
                     notes = ""+ageRating
                     for note in  perf.p.find_all('a'):
                         notes += " "+note.text
-                    screenings.append(Screening(movieName,movieTime, Picturehouse.cinema, movieLink, None, notes, movieDuration))
+                    screenings.append(Screening(movieName,movieTime, self.cinema, movieLink, None, notes, movieDuration))
             
         return screenings
+
+
+class PicturehouseCentral(Picturehouse):
+
+    def __init__(self) -> None:
+        self.cinema = "Picturehouse Central"
+        self.baseLink = "https://www.picturehouses.com/cinema/picturehouse-central"
+
+
+class StratfordPicturehouse(Picturehouse):
+
+    def __init__(self) -> None:
+        self.cinema = "Stratford Picturehouse"
+        self.baseLink = "https://www.picturehouses.com/cinema/stratford-picturehouse"
+
 
 # url = Picturehouse.getURL()
 # soup = Picturehouse.getPage(url)

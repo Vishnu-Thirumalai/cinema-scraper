@@ -55,7 +55,7 @@ class PCC:
 
         screenings = []
         for day in days:
-            date = day.h4.text
+            dateStr = day.h4.text
             performances = day.find_all("div", attrs={'class':'performance'})
 
             for p in performances:
@@ -64,18 +64,28 @@ class PCC:
 
                 main = p.find('a')
                 name = main.text.strip()
+                try:
+                    agePos = name.rindex("(")
+                    age = name[agePos+1:-1]
+                    name = name[:agePos]
+                except ValueError:
+                    pass #Didn't have (AGE_RATING)
+
                 link = PCC.baseLink + main.attrs['href']
 
                 time =  p.find("span", attrs={'class':'time'}).text
-                dateStr = PCC.parseDate(date,time)
+                date = PCC.parseDate(dateStr,time)
 
                 screen =  p.find("span", attrs={'class':'auditorium'}).text
 
-                notes = p.find("span", attrs={'class':'notes'})
-                if notes:
-                    notes = notes.text.strip()
+                notes = ""
+                noteHTML = p.find("span", attrs={'class':'notes'})
+                if noteHTML:
+                    notes = noteHTML.text.strip()
+                if age:
+                    notes = age + " " + notes
 
-                screenings.append(Screening(name,dateStr,PCC.cinema,link,screen,notes))
+                screenings.append(Screening(name,date,PCC.cinema,link,screen,notes))
             
         return screenings
         
