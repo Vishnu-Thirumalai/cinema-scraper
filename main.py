@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from parsers.pcc import PCC
+from parsers.picturehouse import Picturehouse
 from parsers import dummy
 from model.film import *
 from argparse import ArgumentParser
@@ -21,6 +22,10 @@ def displayFilms(films:Dict[str,List[Screening]], targetFilm:str = ""):
 
 def getFilms(startDate:str, endDate:str) -> Dict[str,List[Screening]]: 
     films = PCC.getFilms(startDate,endDate)
+    print("Retrieved PCC")
+    films += Picturehouse.getFilms(startDate,endDate)
+    print("Retrieved Picturehouse")
+
     #films = dummy.getFilms()
     filmDict = dict()
     for f in films:
@@ -56,6 +61,6 @@ args = parser.parse_args()
 start, end = date.getDatesFromArguments(args.dates)
 targetFilm = args.film
 
-
+print("Searching")
 films = getFilms(start, end)
 displayFilms(films,targetFilm)

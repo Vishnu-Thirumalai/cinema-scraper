@@ -55,7 +55,7 @@ class PCC:
 
         screenings = []
         for day in days:
-            day = day.h4.text
+            date = day.h4.text
             performances = day.find_all("div", attrs={'class':'performance'})
 
             for p in performances:
@@ -67,7 +67,7 @@ class PCC:
                 link = PCC.baseLink + main.attrs['href']
 
                 time =  p.find("span", attrs={'class':'time'}).text
-                dateStr = PCC.parseDate(day,time)
+                dateStr = PCC.parseDate(date,time)
 
                 screen =  p.find("span", attrs={'class':'auditorium'}).text
 

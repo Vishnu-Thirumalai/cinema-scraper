@@ -42,18 +42,19 @@ class Picturehouse:
         driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.set_window_size(2300,2000)
-        sleep(0.5)
+        sleep(2)
 
         try:
             get_all_btn = driver.find_element(By.ID,"show_all_dates_btn")
         except NoSuchElementException:
-            print("Can't retrieve films from Picturehouse: Get all Dates button missing")
+            print("Can't retrieve films from "+Picturehouse.cinema+": Get all Dates button missing")
             return None
 
         get_all_btn.click()
-        sleep(0.5)
+        sleep(10)
 
-        source =driver.page_source
+        htmlElement = driver.find_element(By.TAG_NAME, "html")
+        source = htmlElement.get_attribute("outerHTML")
 
         soup = BeautifulSoup(source, 'html.parser')
 
@@ -67,12 +68,17 @@ class Picturehouse:
 
         screenings = []
         while startDate <= endDate:
+
+            #Find div for date
             dateStr = startDate.strftime("class_%Y-%m-%d")
-            startDate+= timedelta(days=1)
             dateDiv = dates.find("div", attrs={'class':dateStr})
+            startDate+= timedelta(days=1)
+
             if dateDiv == None:
+                print("Can't find div for",dateStr)
                 continue
-            print(dateStr)
+
+
             movies = dateDiv.find_all("div", attrs={'class':"movie_deatils_list"})
 
             for movie in movies:
@@ -85,7 +91,6 @@ class Picturehouse:
 
                 performances = movie.find("ul", attrs={'class':"cinemaTime_list"}).find_all('li')
                 for perf in performances:
-                    print(perf)
                     bookingLink = perf.a['href']
                     t = datetime.strptime(perf.a.span.text.strip(), "%H:%M").time()#24Hour:Minute 
                     movieTime = datetime.combine(startDate, t)
@@ -99,10 +104,14 @@ class Picturehouse:
 
 # url = Picturehouse.getURL()
 # soup = Picturehouse.getPage(url)
+# screenings = Picturehouse.getScreenings(soup, date.today(), date.today() + timedelta(days=2))
+# for s in screenings:
+#     print (s.name +"/"+ str(s.time)+"/"+s.link+" - " + s.notes)
 
-with open("picturehouse.html") as file:
-    soup = BeautifulSoup(file, 'html.parser')
-    print("parsed")
-    screenings = Picturehouse.getScreenings(soup, date.today(), date.today() + timedelta(days=2))
-    for s in screenings:
-        print (s.name +"/"+ str(s.time)+"/"+s.link+" - " + s.notes)
+
+# with open("picturehouse.html") as file:
+#     soup = BeautifulSoup(file, 'html.parser')
+#     print("parsed")
+#     screenings = Picturehouse.getScreenings(soup, date.today(), date.today() + timedelta(days=2))
+#     for s in screenings:
+#         print (s.name +"/"+ str(s.time)+"/"+s.link+" - " + s.notes)
