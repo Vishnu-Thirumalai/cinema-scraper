@@ -82,10 +82,14 @@ class PCC:
                 noteHTML = p.find("span", attrs={'class':'notes'})
                 if noteHTML:
                     notes = noteHTML.text.strip()
-                if age:
-                    notes = age + " " + notes
 
-                screenings.append(Screening(name,date,PCC.cinema,link,screen,notes))
-            
+                screenings.append(Screening(name=name,
+                                            time= date,
+                                            cinema=PCC.cinema,
+                                            link= link,
+                                            screen=screen,
+                                            notes= notes,
+                                            ageRating=age))
+
         return screenings
         

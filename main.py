@@ -13,8 +13,9 @@ def displayFilms(films:Dict[str,List[Screening]], targetFilm:str = ""):
     for film, screenings in films.items():
         if targetFilm not in film.lower():
             continue
-        print("---------------")
+        print("---------------\n---------------")
         print(film)
+        print(screenings[-1].ageRating)        
         print(screenings[-1].link)
 
         screenings.sort(key=lambda x:x.time)

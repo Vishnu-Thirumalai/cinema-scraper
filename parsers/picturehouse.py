@@ -76,10 +76,9 @@ class Picturehouse:
             #Find div for date
             dateStr = startDate.strftime("class_%Y-%m-%d")
             dateDiv = dates.find("div", attrs={'class':dateStr})
-            startDate+= timedelta(days=1)
-
             if dateDiv == None:
                 print("Can't find div for",dateStr)
+                startDate+= timedelta(days=1)
                 continue
 
 
@@ -99,11 +98,18 @@ class Picturehouse:
                     t = datetime.strptime(perf.a.span.text.strip(), "%H:%M").time()#24Hour:Minute 
                     movieTime = datetime.combine(startDate, t)
 
-                    notes = ""+ageRating
-                    for note in  perf.p.find_all('a'):
-                        notes += " "+note.text
-                    screenings.append(Screening(movieName,movieTime, self.cinema, movieLink, None, notes, movieDuration))
-            
+                    notes = None
+                    for note in perf.p.find_all('a'):
+                        notes = note.text.strip()
+                    screenings.append(Screening(name=movieName,
+                                                time= movieTime,
+                                                cinema=self.cinema,
+                                                link= movieLink,
+                                                notes= notes,
+                                                duration=movieDuration,
+                                                ageRating= ageRating))
+            startDate+= timedelta(days=1)
+
         return screenings
 
 

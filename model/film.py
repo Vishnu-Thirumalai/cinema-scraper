@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Screening:
-    def __init__(self,name="Movie",time:datetime = datetime(9999,1,1),cinema="cinema",link=None,screen=None,notes=None,duration=0):
+    def __init__(self,name="Movie",time:datetime = datetime(9999,1,1),cinema="cinema",link=None,screen=None,notes=None,duration=0,ageRating=None):
         self.name = name
         self.time = time
         self.cinema = cinema
@@ -9,6 +9,7 @@ class Screening:
         self.screen = screen
         self.duration = duration
         self.notes = notes
+        self.ageRating = ageRating
 
 
     def __str__(self):
