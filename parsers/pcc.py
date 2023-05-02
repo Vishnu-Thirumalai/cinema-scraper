@@ -6,6 +6,8 @@ from model.film import *
 
 from datetime import date
 from datetime import timedelta
+from datetime import datetime
+
 
 class PCC:
 
@@ -34,13 +36,26 @@ class PCC:
     def getPage(url:str) -> BeautifulSoup:
         page = requests.get(url) 
         return BeautifulSoup(page.content, 'html.parser')
+    
+    def parseDate(dt:str,time:str) -> datetime:
+        """Parse PCC dates"""
+        if dt == "Today":
+            d = date.today()
+        else:
+            d = datetime.strptime(dt, "%a %d %b %Y").date()#weekday date month year
         
+        tStr = time.upper().rjust(7,"0")
+        t = datetime.strptime(tStr, "%I:%M%p").time()#12hour:min[AM/PM]
+        return datetime.combine(d,t)
+
+
+
     def getScreenings(soup: BeautifulSoup) -> List[Screening]:        
         days = soup.find("div", attrs={'class':'next-7-days-list'}).find_all("div", attrs={'class':'day'}, recursive=False)
 
         screenings = []
         for day in days:
-            curr = day.h4.text
+            dateStr = day.h4.text
             performances = day.find_all("div", attrs={'class':'performance'})
 
             for p in performances:
@@ -49,17 +64,32 @@ class PCC:
 
                 main = p.find('a')
                 name = main.text.strip()
+                try:
+                    agePos = name.rindex("(")
+                    age = name[agePos+1:-1]
+                    name = name[:agePos]
+                except ValueError:
+                    pass #Didn't have (AGE_RATING)
+
                 link = PCC.baseLink + main.attrs['href']
 
-                time = curr + " - " + p.find("span", attrs={'class':'time'}).text
-            
+                time =  p.find("span", attrs={'class':'time'}).text
+                date = PCC.parseDate(dateStr,time)
+
                 screen =  p.find("span", attrs={'class':'auditorium'}).text
 
-                notes = p.find("span", attrs={'class':'notes'})
-                if notes:
-                    notes = notes.text.strip()
+                notes = ""
+                noteHTML = p.find("span", attrs={'class':'notes'})
+                if noteHTML:
+                    notes = noteHTML.text.strip()
 
-                screenings.append(Screening(name,time,PCC.cinema,link,screen,notes))
-            
+                screenings.append(Screening(name=name,
+                                            time= date,
+                                            cinema=PCC.cinema,
+                                            link= link,
+                                            screen=screen,
+                                            notes= notes,
+                                            ageRating=age))
+
         return screenings
         

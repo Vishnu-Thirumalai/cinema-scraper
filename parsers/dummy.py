@@ -1,4 +1,5 @@
+from model.film import Screening
+
 def getFilms():
-    films = [Screening.getDefault() for _ in range(5)]
-    films[0].name = "Film1"
+    films = [Screening(name="Movie {}".format(i))for i in range(5)]
     return films

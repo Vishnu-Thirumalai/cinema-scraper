@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from parsers.pcc import PCC
+from parsers.picturehouse import PicturehouseCentral, StratfordPicturehouse
 from parsers import dummy
 from model.film import *
 from argparse import ArgumentParser
@@ -12,19 +13,36 @@ def displayFilms(films:Dict[str,List[Screening]], targetFilm:str = ""):
     for film, screenings in films.items():
         if targetFilm not in film.lower():
             continue
-        print("---------------")
+        print("---------------\n---------------")
         print(film)
+        print(screenings[-1].ageRating)        
+        print(screenings[-1].link)
+
+        screenings.sort(key=lambda x:x.time)
+
         for s in screenings:
             print("----")
             print(s.detailString() + ("\n"+s.notes if s.notes else ""))
 
 
 def getFilms(startDate:str, endDate:str) -> Dict[str,List[Screening]]: 
-    films = PCC.getFilms(startDate,endDate)
     #films = dummy.getFilms()
+
+    films = PCC.getFilms(startDate,endDate)
+    print("Retrieved PCC")
+
+    central = PicturehouseCentral()
+    films.extend(central.getFilms(startDate,endDate))
+    print("Retrieved Picturehouse Central")
+
+    stratford = StratfordPicturehouse()
+    films.extend(stratford.getFilms(startDate,endDate))
+    print("Retrieved Picturehouse Stratford")
+    
+
     filmDict = dict()
     for f in films:
-        n = f.name
+        n = f.name.title().strip()
         if n in filmDict:
             filmDict[n].append(f)
         else:
@@ -49,13 +67,15 @@ def getArgParser() -> ArgumentParser:
     parser.add_argument("-f","--film",help="Name of film to search for", default="")
     return parser
 
+def main():
+    # Parse CLI arguments
+    parser = getArgParser()
+    args = parser.parse_args()
+    start, end = date.getDatesFromArguments(args.dates)
+    targetFilm = args.film
 
-# Parse CLI arguments
-parser = getArgParser()
-args = parser.parse_args()
-start, end = date.getDates(args.dates)
-targetFilm = args.film
+    films = getFilms(start, end)
+    displayFilms(films,targetFilm)
 
-
-films = getFilms(start, end)
-displayFilms(films,targetFilm)
+if __name__ == "__main__":
+    main()
