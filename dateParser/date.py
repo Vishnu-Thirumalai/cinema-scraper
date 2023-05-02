@@ -31,4 +31,3 @@ def getDatesFromArguments(dates: List[str]) -> Tuple[date,date]:
     else:
         ret =  date.today()
         return (ret,ret)
-        

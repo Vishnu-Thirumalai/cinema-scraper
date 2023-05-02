@@ -5,6 +5,7 @@ from datetime import datetime
 from datetime import time
 from datetime import date
 
+from bs4 import BeautifulSoup
 
 
 class TestPCC(unittest.TestCase):
@@ -29,6 +30,13 @@ class TestPCC(unittest.TestCase):
         self.assertEqual(dt, today, "Didn't parse \"Today\" correctly")
 
 
+    def test_getScreenings(self):
+        soup = BeautifulSoup()
+        with open("test_html/princecharlescinema.html") as file:
+            soup = BeautifulSoup(file, 'html.parser')
+
+        screenings = PCC.getScreenings(soup)
+        print(screenings)
 
 
 if __name__ == '__main__':

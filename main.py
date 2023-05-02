@@ -42,7 +42,7 @@ def getFilms(startDate:str, endDate:str) -> Dict[str,List[Screening]]:
 
     filmDict = dict()
     for f in films:
-        n = f.name.title()
+        n = f.name.title().strip()
         if n in filmDict:
             filmDict[n].append(f)
         else:
@@ -67,13 +67,15 @@ def getArgParser() -> ArgumentParser:
     parser.add_argument("-f","--film",help="Name of film to search for", default="")
     return parser
 
+def main():
+    # Parse CLI arguments
+    parser = getArgParser()
+    args = parser.parse_args()
+    start, end = date.getDatesFromArguments(args.dates)
+    targetFilm = args.film
 
-# Parse CLI arguments
-parser = getArgParser()
-args = parser.parse_args()
-start, end = date.getDatesFromArguments(args.dates)
-targetFilm = args.film
+    films = getFilms(start, end)
+    displayFilms(films,targetFilm)
 
-print("Searching")
-films = getFilms(start, end)
-displayFilms(films,targetFilm)
+if __name__ == "__main__":
+    main()

@@ -39,23 +39,27 @@ class Picturehouse:
         options = Options()
         options.add_argument('-headless')
 
+        print(self.cinema,end="",flush=True)
         driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.set_window_size(2300,2000)
         
-
         for i in range(10):
             try:
                 get_all_btn = driver.find_element(By.ID,"show_all_dates_btn")
                 break
             except NoSuchElementException:
                 sleep(1)
+                print(".",end="",flush=True)
         if not get_all_btn:
             print("Can't retrieve films from "+self.cinema+": Get all Dates button missing")
             return None
 
         get_all_btn.click()
-        sleep(10)
+        for i in range(10):
+                sleep(1)
+                print(".",end="",flush=True)
+        print()
 
         htmlElement = driver.find_element(By.TAG_NAME, "html")
         source = htmlElement.get_attribute("outerHTML")

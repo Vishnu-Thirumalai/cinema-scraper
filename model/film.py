@@ -1,23 +1,21 @@
 from datetime import datetime
+from dataclasses import dataclass
 
+@dataclass(order=True) #Generates __lt__(<)/le(<=)/ge/gg based on fields, in order
 class Screening:
-    def __init__(self,name="Movie",time:datetime = datetime(9999,1,1),cinema="cinema",link=None,screen=None,notes=None,duration=0,ageRating=None):
-        self.name = name
-        self.time = time
-        self.cinema = cinema
-        self.link = link
-        self.screen = screen
-        self.duration = duration
-        self.notes = notes
-        self.ageRating = ageRating
-
-
-    def __str__(self):
-        ret = self.name + " " + self.time + " " + self.cinema + "\n"
-
-
-        return  ret + " " + self.screen + "\n" + self.link
+    time:datetime = datetime(9999,1,1)
+    cinema: str ="cinema"
+    name: str ="Movie"
     
+    link: str =None
+    screen: str =None
+    notes: str =None
+    duration:int = 0
+    ageRating: str =None
+
+    def getDefault():
+        return Screening("Movie","Today","Cinema","www.no.com","Screen 1", None)
+   
     def detailString(self):
 
         ret = ""
@@ -30,7 +28,4 @@ class Screening:
         # if self.link:
         #     ret += "\n" + self.link 
 
-        return  ret
-
-    def getDefault():
-        return Screening("Movie","Today","Cinema","www.no.com","Screen 1", None)
+        return ret
